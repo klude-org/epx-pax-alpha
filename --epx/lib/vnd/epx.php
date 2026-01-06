@@ -53,7 +53,7 @@ namespace { (function(){
             )){
                 if(!\is_file($f_path = "{$_SERVER['_']['START_DIR']}/{$p}/-#.php")){
                     $w_owner = (\str_replace('_','-',$m['w_owner'] ?? '') ?: ($_['ghalt_owner'] ?? 'klude-org'));
-                    $w_repo = "epx-".(\str_replace('_','-',$m['w_repo'] ?? '') ?: ($_['ghalt_repo'] ?? 'pax-one'));
+                    $w_repo = "epx-".(\str_replace('_','-',$m['w_repo'] ?? '') ?: ($_['ghalt_repo'] ?? 'pax-alpha'));
                     $w_ref = $_['ghalt_ref'] ?? 'main';
                     $w_url = "https://raw.githubusercontent.com/{$w_owner}/{$w_repo}/{$w_ref}/--epx/lib/vnd";
                     $api_token = \is_file($f = "{$_SERVER['_']['PLEX_DIR']}/.keys-$.php") 
