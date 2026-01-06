@@ -12,7 +12,7 @@
 #endregion
 # ###################################################################################################################
 # i'd like to be a tree - pilu (._.) // please keep this line in all versions - BP
-namespace { return include (function(){
+namespace { return \is_callable($c = include (function(){
     \defined('_\MSTART') OR \define('_\MSTART', \microtime(true));
     $_SERVER['_']['PLEX_DIR'] = \strtr(__DIR__,'\\','/');
     $_SERVER['_']['SITE_DIR'] = \strtr($_SERVER['FW__SITE_DIR'] ?? (empty($_SERVER['HTTP_HOST'])
@@ -30,5 +30,5 @@ namespace { return include (function(){
     } else {
         throw new \Exception("Failed: Unable to locate or install epx.php");
     }
-})();}
+})()) ? (($GLOBALS['IS_STANDALONE'] ?? null) ? $c() : $c ) : $c; }
 

@@ -1,1 +1,0 @@
-if not exist .\.local\vnd\epx mklink /J .\.local\vnd\epx .\lib\vnd\epx

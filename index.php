@@ -1,8 +1,4 @@
 <?php 
-include '--epx/.start.php';
-o()
-    ->module('abaca')
-    ->execute()
-;
+include '--epx/index.php';
 
 
