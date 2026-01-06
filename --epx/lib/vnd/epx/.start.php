@@ -29,19 +29,14 @@ namespace { (function(){
                 : $_SERVER['HTTP_X_REQUEST_INTERFACE'] ?? 'web'
             )
         ;
-        $_SERVER['_']['START_FILE'] = \str_replace('\\','/', __FILE__);
-        $_SERVER['_']['START_DIR'] =  \str_replace('\\','/', __DIR__);
-        $_SERVER['_']['SITE_DIR'] ??= ($_SERVER['FW__SITE_DIR'] = \str_replace('\\','/', empty($_SERVER['HTTP_HOST'])
-            ? \realpath($_SERVER['FW__SITE_DIR'] ?? \getcwd())
-            : \realpath(\dirname($_SERVER['SCRIPT_FILENAME'])) 
-        ));
+        $_SERVER['_']['PVND_DIR'] =  \str_replace('\\','/', __DIR__);
         global $_;
         (isset($_) && \is_array($_)) OR $_ = [];
         function o(){ static $I; return $I ?? ($I = \epx::_()); }
         $_['ALT'][\epx::class] = fn($n) => \class_alias(\epx\std\origin::class, $n);
         \spl_autoload_extensions("-#{$intfc}.php,/-#{$intfc}.php,-#.php,/-#.php");
         \spl_autoload_register();
-        \set_include_path($_SERVER['_']['START_DIR'].PATH_SEPARATOR.get_include_path());
+        \set_include_path($_SERVER['_']['PVND_DIR'].PATH_SEPARATOR.get_include_path());
         \spl_autoload_register(function($n){
             global $_;
             if(\is_callable($alt = $_['ALT'][$n] ?? null)){
@@ -51,7 +46,7 @@ namespace { (function(){
                 $p = \str_replace('\\','/', $n),
                 $m
             )){
-                if(!\is_file($f_path = "{$_SERVER['_']['START_DIR']}/{$p}/-#.php")){
+                if(!\is_file($f_path = "{$_SERVER['_']['PVND_DIR']}/{$p}/-#.php")){
                     $w_owner = (\str_replace('_','-',$m['w_owner'] ?? '') ?: ($_['ghalt_owner'] ?? 'klude-org'));
                     $w_repo = "epx-".(\str_replace('_','-',$m['w_repo'] ?? '') ?: ($_['ghalt_repo'] ?? 'pax-alpha'));
                     $w_ref = $_['ghalt_ref'] ?? 'main';
