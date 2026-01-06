@@ -21,7 +21,7 @@ namespace { return include (function(){
     ),'\\','/');
     if(\is_file($f = "{$_SERVER['_']['SITE_DIR']}/.local-start.php")){
         return $f;
-    } else if(\is_file($f = "{$_SERVER['_']['PLEX_DIR']}/.local/vnd/epx.php")){
+    } else if(\is_file($f = "{$_SERVER['_']['PLEX_DIR']}/.local/vnd/epx/.start.php")){
         return $f;
     } else if($c = \file_get_contents("https://raw.githubusercontent.com/klude-org/epx-pax-alpha/main/--epx/lib/vnd/epx/.start.php")){
         \is_dir($d = \dirname($f)) OR \mkdir($d, 0777, true);

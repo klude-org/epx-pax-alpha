@@ -29,7 +29,7 @@ namespace { (function(){
                 : $_SERVER['HTTP_X_REQUEST_INTERFACE'] ?? 'web'
             )
         ;
-        $_SERVER['_']['PVND_DIR'] =  \str_replace('\\','/', __DIR__);
+        $_SERVER['_']['PVND_DIR'] =  \strtr(\dirname(__DIR__),'\\','/');
         global $_;
         (isset($_) && \is_array($_)) OR $_ = [];
         function o(){ static $I; return $I ?? ($I = \epx::_()); }
@@ -43,12 +43,12 @@ namespace { (function(){
                 ($alt)($n);
             } else if(\preg_match(
                 "#^epx(__(?<w_repo>.*?)__(?<w_owner>[^/]+))?#",
-                $p = \str_replace('\\','/', $n),
+                $p = \strtr($n,'\\','/'),
                 $m
             )){
                 if(!\is_file($f_path = "{$_SERVER['_']['PVND_DIR']}/{$p}/-#.php")){
-                    $w_owner = (\str_replace('_','-',$m['w_owner'] ?? '') ?: ($_['ghalt_owner'] ?? 'klude-org'));
-                    $w_repo = "epx-".(\str_replace('_','-',$m['w_repo'] ?? '') ?: ($_['ghalt_repo'] ?? 'pax-alpha'));
+                    $w_owner = (\strtr($m['w_owner'] ?? '','_','-') ?: ($_['ghalt_owner'] ?? 'klude-org'));
+                    $w_repo = "epx-".(\strtr($m['w_repo'] ?? '','_','-') ?: ($_['ghalt_repo'] ?? 'pax-alpha'));
                     $w_ref = $_['ghalt_ref'] ?? 'main';
                     $w_url = "https://raw.githubusercontent.com/{$w_owner}/{$w_repo}/{$w_ref}/--epx/lib/vnd";
                     $api_token = \is_file($f = "{$_SERVER['_']['PLEX_DIR']}/.keys-$.php") 
