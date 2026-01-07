@@ -90,6 +90,23 @@ namespace { return \is_callable($c = (function(){
     }
     #endregion
     # ###################################################################################################################
+    #region ENSURING CLI BEARINGS
+    if(!empty($_SERVER['HTTP_HOST']) && !\is_file($f = "{$_SERVER['DOCUMENT_ROOT']}/--epx/.local-http-root.php")){
+        $root_dir = \strtr($_SERVER['DOCUMENT_ROOT'], '\\','/');
+        \file_put_contents($f, <<<PHP
+            <?php
+            1 AND empty(\$_SERVER[\$n='DOCUMENT_ROOT']) AND \$_SERVER[\$n] = "{$root_dir}";
+            1 AND empty(\$_SERVER[\$n='FW__ROOT_DIR']) AND \$_SERVER[\$n]  = "{$root_dir}";
+            1 AND empty(\$_SERVER[\$n='FW__ROOT_DOM']) AND \$_SERVER[\$n]  = "{$_SERVER['HTTP_HOST']}";
+            1 AND !isset(\$_ENV['DB_HOSTNAME']) AND \$_ENV['DB_HOSTNAME'] = 'localhost';
+            1 AND !isset(\$_ENV['DB_DATABASE']) AND \$_ENV['DB_DATABASE'] = 'default_db';
+            1 AND !isset(\$_ENV['DB_USERNAME']) AND \$_ENV['DB_USERNAME'] = 'root';
+            1 AND !isset(\$_ENV['DB_PASSWORD']) AND \$_ENV['DB_PASSWORD'] = 'pass';
+            1 AND !isset(\$_ENV['DB_CHAR_SET']) AND \$_ENV['DB_CHAR_SET'] = 'utf8mb4';        
+        PHP);
+    } 
+    #endregion
+    # ###################################################################################################################
     #region NEKRIT MULTI PLEX
     global $_;
     (isset($_) && \is_array($_)) OR $_ = [];
@@ -117,6 +134,16 @@ namespace { return \is_callable($c = (function(){
         : "{$_SERVER['_']['SITE_DIR']}/--epx"
     );
     $_SERVER['_']['PVND_DIR'] = "{$_SERVER['_']['MPLEX_DIR']}/.local/vnd";
+    \is_file($f = "{$_SERVER['DOCUMENT_ROOT']}/--epx/.local-http-root.php") AND include $f;
+    $_SERVER['_']['ROOT_DIR'] = \strtr(\realpath($_SERVER['DOCUMENT_ROOT']), '\\','/', );
+    $_SERVER['_']['ROOT_URL'] = (function(){
+        return (($_SERVER["REQUEST_SCHEME"] 
+            ?? ((\strtolower(($_SERVER['HTTPS'] ?? 'off') ?: 'off') === 'off') ? 'http' : 'https'))
+        ).'://'.($_SERVER["HTTP_HOST"] ?? null ?: $_SERVER["FW__ROOT_DOM"]);
+    })();
+      
+    
+    
     \spl_autoload_extensions("-#{$intfc}.php,/-#{$intfc}.php,-#.php,/-#.php");
     \spl_autoload_register();
     \set_include_path($_SERVER['_']['PVND_DIR'].PATH_SEPARATOR.get_include_path());
@@ -165,6 +192,7 @@ namespace { return \is_callable($c = (function(){
             include $f_path;
         }
     },true,false);
+    
     if($_SERVER['_']['IS_PLEX_MANAGE'] ?? null){
         \epx\std\module::_('plex_admin_v1.app:github/klude-org/epx-pax-alpha/main')->include();
         $_SERVER['_']['ENV_SOURCE'] = 3;
