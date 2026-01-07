@@ -1,8 +1,27 @@
-<?php namespace epx\std\module_installer;
+<?php namespace epx\std\github;
 
-class github extends \stdClass {
+final class module extends \epx\std\module {
     
-    public static function _(){ return new static; }
+    public readonly string $GH_REPO;
+    public readonly string $GH_OWNER;
+    public readonly string $GH_REF;
+    public readonly string $MODULE;
+    public readonly string $NAME;
+    
+    public function __construct(string $r_key, string $r_module, string $r_source){
+        [$r_owner, $r_repo, $r_ref] = [\strtok($r_source,'/'), \strtok('/'), \strtok('')];
+        $r_owner = $r_owner ?: 'klude-org';
+        $r_repo = $r_repo ?: 'epx-pax-alpha';
+        $r_ref = $r_ref ?: 'main';
+        $r_name = \strtr("{$r_module}~(github~{$r_owner}/{$r_repo}/{$r_ref})",'/','~');
+        $r_dir = "{$_SERVER['_']['MPLEX_DIR']}/.local/{$r_name}";
+        $this->GH_OWNER = $r_owner;
+        $this->GH_REPO = $r_repo;
+        $this->GH_REF = $r_ref;
+        $this->MODULE = $r_module;
+        $this->NAME = $r_name;
+        parent::__construct($r_dir);
+    }
     
     function gh__api_url($subpath, $query = []){
         $x = "https://api.github.com/repos/{$this->GH_OWNER}/{$this->GH_REPO}"
@@ -229,25 +248,21 @@ class github extends \stdClass {
         }
     }    
     
-    public function config__read_token($r_owner, $r_repo){
-        if(\is_file($f = epx()->PPLEX_DIR."/keys-$.php")){
-            return (include $f)["github.com/{$r_owner}/{$r_repo}"] ?? '';
-        }
-        return '';
+    public function config__read_token(){
+        return \is_file($f = "{$_SERVER['_']['MPLEX_DIR']}/.keys-$.php") 
+            ? (($x = include $f)["{$this->GH_OWNER}/{$this->GH_REPO}"] ?? $x[$this->GH_OWNER] ?? null)
+            : null
+        ;
     }
     
-    public function __invoke($module_dir, $r_module, $r_source, $r_ref = 'main'){
-        
-        [$r_domain, $r_owner, $r_repo] = \explode('/',$r_source);
-        $source = "[{$r_domain}/{$r_owner}/{$r_repo}/{$r_module}/{$r_ref}]";
-        
-        //$this->GH_TOKEN = $this->config__read_token($r_owner, $r_repo);
-        $this->GH_OWNER = $r_owner;
-        $this->GH_REPO = $r_repo;
-        $this->GH_TOKEN ??= null;
+    
+    public function update(){
+        $module_dir = $this->DIR;
+        $this->GH_TOKEN = $this->config__read_token();
+        $this->GH_URL = "https://api.github.com/repos/{$this->GH_OWNER}/{$this->GH_REPO}";
         
         if(
-            ([$ok, $status] = $this->curl_head($this->GH_URL = "https://api.github.com/repos/{$this->GH_OWNER}/{$this->GH_REPO}", $this->GH_TOKEN))
+            ([$ok, $status] = $this->curl_head($this->GH_URL, $this->GH_TOKEN))
             && (!$ok || $status !== 200)
         ){
             throw new \Exception("Github Response {$status} for Package: {$this->GH_URL}");
@@ -256,17 +271,15 @@ class github extends \stdClass {
         $timestamp = \date('Y-md-Hi-s');
         $local_dir = \dirname($module_dir);
         $backup_dir = "{$module_dir}.backup-{$timestamp}";
-        $zip_dir = "{$local_dir}/".
-            ($zip_name = "pkg-download-".(\str_replace('/','][',($source))))
-        ;
+        $zip_dir = "{$local_dir}/".($zip_name = "pkg-download~{$this->NAME}");
         $zip_code_file = "{$zip_dir}/code.zip";
         $extract_dir = "{$zip_dir}/extract";
         $meta_json = "{$module_dir}/.module.json";
         $meta_data = [
             'installed_on' => $timestamp,
+            'name' => $this->NAME,
             'type' => 'module',
-            'source' => $source,
-            'version' => $r_ref,
+            'version' => $this->GH_REF,
             'backuup' => $backup_dir,
             'zip' => $zip_name,
         ];
@@ -274,7 +287,7 @@ class github extends \stdClass {
             throw new \Exception("Failed: Unable to create directory: $d");
         })($d);
         if(!\is_file($zip_code_file)){
-            [$ok, $gson, $err] = $this->curl($this->gh__api_url("zipball/".rawurlencode($r_ref)), $zip_code_file);
+            [$ok, $gson, $err] = $this->curl($this->gh__api_url("zipball/".rawurlencode($this->GH_REF)), $zip_code_file);
             if(!$ok){
                 $this->curl__json_response(false, ['error' => "Library couldn't be dowloaded: $err"], 502);
             }
@@ -285,7 +298,7 @@ class github extends \stdClass {
             }
             $sub_folder = \substr($s = $zip->getNameIndex(0), 0, \strpos($s, '/'));
             $zip->extractTo($extract_dir);
-            $src_lib_subpath = "--epx/lib/{$r_module}";
+            $src_lib_subpath = "--epx/lib/{$this->MODULE}";
             $transfer_to = $module_dir;
             if(\is_dir($transfer_from = "{$extract_dir}/{$sub_folder}/{$src_lib_subpath}")){
                 if(\is_dir($module_dir)){
@@ -314,6 +327,6 @@ class github extends \stdClass {
         }
         //keep this outside the finally if we need debugging
         $this->fs_delete($zip_dir);
-        return $module_dir;
+        return $this;
     }
 }
