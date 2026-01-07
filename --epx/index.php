@@ -13,6 +13,8 @@
 # ###################################################################################################################
 # i'd like to be a tree - pilu (._.) // please keep this line in all versions - BP
 namespace { return \is_callable($c = (function(){
+    # ###################################################################################################################
+    #region DX
     \defined('_\MSTART') OR \define('_\MSTART', \microtime(true));
     \set_error_handler(function($severity, $message, $file, $line){
         throw new \ErrorException(
@@ -24,7 +26,7 @@ namespace { return \is_callable($c = (function(){
         );
     });
     \set_exception_handler(function($ex){
-        switch($_SERVER['_']['INTFC'] ?? 'web'){
+        switch($_SERVER['_']['INTFC'] ?? (empty($_SERVER['HTTP_HOST']) ? 'cli' : 'api')){
             case 'cli':{
                 echo "\033[91m\n"
                     .$ex::class.": {$ex->getMessage()}\n"
@@ -76,31 +78,24 @@ namespace { return \is_callable($c = (function(){
             } break;
         }        
     });
-    
-    $_SERVER['_']['IS_CLI'] = empty($_SERVER['HTTP_HOST']);
-    $_SERVER['_']['INTFC'] = $intfc = $_SERVER['FW__INTFC']
-        ?? ($_SERVER['_']['IS_CLI'] 
-            ? 'cli'
-            : $_SERVER['HTTP_X_REQUEST_INTERFACE'] ?? 'web'
-        )
-    ;
-    $_SERVER['_']['MPLEX_DIR'] = \strtr(__DIR__,'\\','/');
+    #endregion
+    # ###################################################################################################################
+    #region DIRECT CALL - LEGACY SUPPORT
     $_SERVER['_']['SITE_DIR'] = \strtr($_SERVER['FW__SITE_DIR'] ?? (empty($_SERVER['HTTP_HOST'])
         ? realpath($_SERVER['FW__SITE_DIR'] ?? \getcwd())
         : realpath(\dirname($_SERVER['SCRIPT_FILENAME']))
     ),'\\','/');
-    $_SERVER['_']['SPLEX_DIR'] = (\basname($_SERVER['_']['SITE_DIR']) == '--epx') 
-        ? $_SERVER['_']['SITE_DIR']
-        : "{$_SERVER['_']['SITE_DIR']}/--epx"
-    ;
-    if(\is_file($f = "{$_SERVER['_']['SITE_DIR']}/.local-start.php")){
+    if(\is_file($f = "{$_SERVER['_']['SITE_DIR']}/--epx/.local-start.php")){
         return include $f;
     }
-    
+    #endregion
+    # ###################################################################################################################
+    #region NEKRIT MULTI PLEX
     global $_;
     (isset($_) && \is_array($_)) OR $_ = [];
     function o(){ static $I; return $I ?? ($I = \epx::_()); }
     $_['ALT'][\epx::class] = fn($n) => \class_alias(\epx\std\origin::class, $n);
+    $_SERVER['_']['IS_CLI'] = empty($_SERVER['HTTP_HOST']);
     $_SERVER['_']['OB_OUT'] = \ob_get_level();
     $_SERVER['_']['IS_CLI'] OR \ob_start();
     $_SERVER['_']['OB_TOP'] = \ob_get_level();
@@ -109,6 +104,18 @@ namespace { return \is_callable($c = (function(){
         'extensions' => \spl_autoload_extensions(),
         'path' =>  \get_include_path(),
     ];
+    $_SERVER['_']['INTFC'] = $intfc = $_SERVER['FW__INTFC']
+        ?? ($_SERVER['_']['IS_CLI'] 
+            ? 'cli'
+            : $_SERVER['HTTP_X_REQUEST_INTERFACE'] ?? 'web'
+        )
+    ;
+    $_SERVER['_']['MPLEX_DIR'] = \strtr(__DIR__,'\\','/');
+    $_SERVER['_']['IS_PLEX_MANAGE'] = \basename($_SERVER['_']['SITE_DIR']) == '--epx';
+    $_SERVER['_']['SPLEX_DIR'] = ($_SERVER['_']['IS_PLEX_MANAGE']
+        ? $_SERVER['_']['SITE_DIR']
+        : "{$_SERVER['_']['SITE_DIR']}/--epx"
+    );
     $_SERVER['_']['PVND_DIR'] = "{$_SERVER['_']['MPLEX_DIR']}/.local/vnd";
     \spl_autoload_extensions("-#{$intfc}.php,/-#{$intfc}.php,-#.php,/-#.php");
     \spl_autoload_register();
@@ -158,7 +165,7 @@ namespace { return \is_callable($c = (function(){
             include $f_path;
         }
     },true,false);
-    if(\basename($_SERVER['_']['SITE_DIR']) == '--epx'){
+    if($_SERVER['_']['IS_PLEX_MANAGE'] ?? null){
         \epx\std\module::_('plex_admin_v1.app:github/klude-org/epx-pax-alpha/main')->include();
         $_SERVER['_']['ENV_SOURCE'] = 3;
     } else if(\is_file($f = "{$_SERVER['_']['SPLEX_DIR']}/.local-env-{$intfc}.php")){ 
@@ -196,6 +203,7 @@ namespace { return \is_callable($c = (function(){
     } else if($f = \stream_resolve_include_path('.start.php')){
         return include $f;
     }
+    #endregion
     
 })()) ? $c() : $c; }
 
