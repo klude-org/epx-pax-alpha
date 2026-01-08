@@ -1,6 +1,6 @@
 <?php namespace _\i;
 
-class dx {
+class dx extends \stdClass {
  
     use \_\i\singleton__t;
     
@@ -180,6 +180,14 @@ class dx {
         
     }
     
+    public function __get($n){
+        if(\ctype_lower($n[0])) {
+            if(\class_exists($c = static::class.'\\'.$n)){
+                return $this->$n = $c::_();
+            }
+            return $this->$n = null;
+        } 
+    }
     
     public function trap(){
         $data = $this->data();
@@ -251,6 +259,7 @@ class dx {
         i()->server->_;
         return [
             'nav' => (array) i()->nav,
+            'trace' => $GLOBALS['_TRACE'],
             'env' => $_ENV,
             'server' => (function(){
                 $list = [];

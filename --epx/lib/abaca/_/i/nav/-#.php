@@ -299,19 +299,19 @@ class nav extends \stdClass {
         try {
             $INIT__EN = true;
             $__CONTEXT__ = ($this->{$this->ENTITY}->panel) ?? $this;
-            $__REQ__ = $this;
+            $__NAV__ = $this;
             $abort__fn = fn(...$args) => $this->route_abort(...$args);
-            return (function() use($abort__fn, $__REQ__){
-                if($__REQ__->control ?? null){
-                    if(\is_object($o = (include $__REQ__->ctlr_file))){
-                        if(\method_exists($o, $c = 'ctl__'.$__REQ__->control)){
+            return (function() use($abort__fn, $__NAV__){
+                if($__NAV__->control ?? null){
+                    if(\is_object($o = (include $__NAV__->CTLR_FILE))){
+                        if(\method_exists($o, $c = 'ctl__'.$__NAV__->control)){
                             $o->$c();
                         } else {
                             ($abort__fn)(404, '404: Not Found: Missing control');
                         }
                     }
                 } else {
-                    if(\is_callable($o = (include $__REQ__->ctlr_file))){
+                    if(\is_callable($o = (include $__NAV__->CTLR_FILE))){
                         ($o)();
                     }
                 }

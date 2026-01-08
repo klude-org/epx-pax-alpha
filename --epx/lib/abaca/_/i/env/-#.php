@@ -4,7 +4,7 @@ class env extends \stdClass implements \ArrayAccess, \JsonSerializable {
     
     use \_\i\singleton__t;
     
-    private $_;
+    public readonly array $_;
     
     public function __construct(){
         $this->_ = $_ENV;

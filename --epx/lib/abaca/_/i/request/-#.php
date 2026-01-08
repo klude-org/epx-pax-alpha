@@ -4,7 +4,10 @@ final class request extends \stdClass implements \ArrayAccess, \JsonSerializable
     
     use \_\i\singleton__t;
     
+    public readonly array $_;
+    
     public function __construct(){
+        
         $this->IS_CLI = $_SERVER['_']['IS_CLI'];            
         if(!$this->IS_CLI){
             $this->URL_PARTS = \parse_url($this->URL = (($_SERVER["REQUEST_SCHEME"] 
@@ -36,35 +39,8 @@ final class request extends \stdClass implements \ArrayAccess, \JsonSerializable
                 }
             })();
         }        
-    }
-    
-    public function offsetSet($n, $v):void { 
-        throw new \Exception('Set-Accessor is not supported for class '.static::class);
-    }
-    public function offsetExists($n):bool { 
-        return isset($this->_[$n]);
-    }
-    public function offsetUnset($n):void { 
-        throw new \Exception('Unset-Accessor is not supported for class '.static::class);
-    }
-    public function offsetGet($n):mixed {  
-        return $this->_[$n] ?? null;
-    }
-    public function jsonSerialize():mixed {
-        return (array) $this;
-    }
-    
-    public function __get($n){
-        if($n !== '_' && \ctype_lower($n[0])){
-            if(\class_exists($c = static::class.'\\'.$n)){
-                return $this->$n = $c::_();
-            }
-            return $this->$n = null;
-        }
-
-
         
-        $this->_ = ($_SERVER['_']['IS_CLI']
+        $this->_ = ($this->IS_CLI
             ? function(){
                 $parsed = [];
                 $key = null;
@@ -190,7 +166,32 @@ final class request extends \stdClass implements \ArrayAccess, \JsonSerializable
             }
         )();
         $_REQUEST = $this;
-        return $this->_;
+        return $this->_;        
+    }
+    
+    public function offsetSet($n, $v):void { 
+        throw new \Exception('Set-Accessor is not supported for class '.static::class);
+    }
+    public function offsetExists($n):bool { 
+        return isset($this->_[$n]);
+    }
+    public function offsetUnset($n):void { 
+        throw new \Exception('Unset-Accessor is not supported for class '.static::class);
+    }
+    public function offsetGet($n):mixed {  
+        return $this->_[$n] ?? null;
+    }
+    public function jsonSerialize():mixed {
+        return (array) $this;
+    }
+    
+    public function __get($n){
+        if(\ctype_lower($n[0])) {
+            if(\class_exists($c = static::class.'\\'.$n)){
+                return $this->$n = $c::_();
+            }
+            return $this->$n = null;
+        } 
     }
 
     
