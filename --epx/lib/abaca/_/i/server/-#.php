@@ -8,6 +8,42 @@ final class server extends \stdClass implements \ArrayAccess, \JsonSerializable 
     
     protected function __construct(){ 
         $nav = i()->nav;
+        $_SERVER['_']['ROOT_DIR'] = \strtr(\realpath($_SERVER['DOCUMENT_ROOT']), '\\','/', );
+        $_SERVER['_']['ROOT_URL'] = (function(){
+            return (($_SERVER["REQUEST_SCHEME"] 
+                ?? ((\strtolower(($_SERVER['HTTPS'] ?? 'off') ?: 'off') === 'off') ? 'http' : 'https'))
+            ).'://'.($_SERVER["HTTP_HOST"] ?? null ?: $_SERVER["FW__ROOT_DOM"]);
+        })();
+        $_SERVER['_']['SITE_URP'] = (function(){
+            if($_SERVER['_']['IS_CLI']){
+                if($_SERVER['_']['ROOT_URL']){
+                    if(\str_starts_with($_SERVER['_']['SITE_DIR'], $_SERVER['_']['ROOT_DIR'])){
+                        return \substr($_SERVER['_']['SITE_DIR'], \strlen($_SERVER['_']['ROOT_DIR']));
+                    } else {
+                        return false;
+                    }
+                }
+            } else if((\php_sapi_name() == 'cli-server')){
+                return '';
+            } else {
+                $p = \strtok($_SERVER['REQUEST_URI'],'?');
+                if((\str_starts_with($p, $n = $_SERVER['SCRIPT_NAME']))){
+                    return \substr($p, 0, \strlen($_SERVER['SCRIPT_NAME']));
+                } else if((($d = \dirname($n = $_SERVER['SCRIPT_NAME'])) == DIRECTORY_SEPARATOR)){
+                    return '';
+                } else {
+                    return \substr($p, 0, \strlen($d));
+                }
+            }
+        })();
+        $_SERVER['_']['SITE_URL'] = ($_SERVER['_']['ROOT_URL']  
+            ? \rtrim($_SERVER['_']['ROOT_URL'].$_SERVER['_']['SITE_URP'],'/') 
+            : ""
+        );
+        $_SERVER['_']['BASE_URL'] = $_SERVER['_']['SITE_URL'];
+        $_SERVER['_']['FRAME_URL'] = $_SERVER['_']['SITE_URL'];
+        $_SERVER['_']['PORTAL_URL'] = $_SERVER['_']['SITE_URL'];
+        $_SERVER['_']['CTLR_URL'] = $_SERVER['_']['SITE_URL'];
         $_SERVER['_']['BASE_URL'] = $base_url = $_SERVER['_']['SITE_URL'].($nav->RSSN ? $nav::SPFX.$nav->RSSN : '');
         $_SERVER['_']['FRAME_URL'] = $frame_url = $_SERVER['_']['SITE_URL'].$nav::SPFX.$nav->SESSION_ID;
         $_SERVER['_']['PANEL_URL'] = $panel_url = rtrim($base_url."/"

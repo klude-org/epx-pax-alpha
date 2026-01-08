@@ -130,49 +130,13 @@ namespace { return \is_callable($c = (function(){
     ;
     $_SERVER['_']['IS_PLEX_MANAGE'] = \basename($_SERVER['_']['SITE_DIR']) == '--epx';
     $_SERVER['_']['MPLEX_DIR'] = \strtr(__DIR__,'\\','/');
+    $_SERVER['_']['MVND_DIR'] = "{$_SERVER['_']['MPLEX_DIR']}/.local/vnd";
     $_SERVER['_']['SPLEX_DIR'] = ($_SERVER['_']['IS_PLEX_MANAGE']
         ? $_SERVER['_']['SITE_DIR']
         : "{$_SERVER['_']['SITE_DIR']}/--epx"
     );
-    $_SERVER['_']['MVND_DIR'] = "{$_SERVER['_']['MPLEX_DIR']}/.local/vnd";
-    \is_file($f = "{$_SERVER['DOCUMENT_ROOT']}/--epx/.local-http-root.php") AND include $f;
-    $_SERVER['_']['ROOT_DIR'] = \strtr(\realpath($_SERVER['DOCUMENT_ROOT']), '\\','/', );
-    $_SERVER['_']['ROOT_URL'] = (function(){
-        return (($_SERVER["REQUEST_SCHEME"] 
-            ?? ((\strtolower(($_SERVER['HTTPS'] ?? 'off') ?: 'off') === 'off') ? 'http' : 'https'))
-        ).'://'.($_SERVER["HTTP_HOST"] ?? null ?: $_SERVER["FW__ROOT_DOM"]);
-    })();
-    $_SERVER['_']['SITE_URP'] = (function(){
-        if($_SERVER['_']['IS_CLI']){
-            if($_SERVER['_']['ROOT_URL']){
-                if(\str_starts_with($_SERVER['_']['SITE_DIR'], $_SERVER['_']['ROOT_DIR'])){
-                    return \substr($_SERVER['_']['SITE_DIR'], \strlen($_SERVER['_']['ROOT_DIR']));
-                } else {
-                    return false;
-                }
-            }
-        } else if((\php_sapi_name() == 'cli-server')){
-            return '';
-        } else {
-            $p = \strtok($_SERVER['REQUEST_URI'],'?');
-            if((\str_starts_with($p, $n = $_SERVER['SCRIPT_NAME']))){
-                return \substr($p, 0, \strlen($_SERVER['SCRIPT_NAME']));
-            } else if((($d = \dirname($n = $_SERVER['SCRIPT_NAME'])) == DIRECTORY_SEPARATOR)){
-                return '';
-            } else {
-                return \substr($p, 0, \strlen($d));
-            }
-        }
-    })();
-    $_SERVER['_']['SITE_URL'] = ($_SERVER['_']['ROOT_URL']  
-        ? \rtrim($_SERVER['_']['ROOT_URL'].$_SERVER['_']['SITE_URP'],'/') 
-        : ""
-    );
-    $_SERVER['_']['BASE_URL'] = $_SERVER['_']['SITE_URL'];
-    $_SERVER['_']['FRAME_URL'] = $_SERVER['_']['SITE_URL'];
-    $_SERVER['_']['PORTAL_URL'] = $_SERVER['_']['SITE_URL'];
-    $_SERVER['_']['CTLR_URL'] = $_SERVER['_']['SITE_URL'];
     $_SERVER['_']['LOCAL_DIR'] = "{$_SERVER['_']['SPLEX_DIR']}/.local";
+    \is_file($f = "{$_SERVER['DOCUMENT_ROOT']}/--epx/.local-http-root.php") AND include $f;
     
     \spl_autoload_extensions("-#{$intfc}.php,/-#{$intfc}.php,-#.php,/-#.php");
     \spl_autoload_register();

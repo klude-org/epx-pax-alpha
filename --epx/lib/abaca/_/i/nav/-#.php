@@ -322,9 +322,9 @@ class nav extends \stdClass {
             //echo \json_encode($req, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL;
             if($INIT__EN ?? false){
 
-                i()->request->_;
-                i()->server->_;
-                i()->env->_;
+                i()->request;
+                i()->server;
+                i()->env;
                 
                 $include__fn = function($f){ include $f; };
                 $tsp_list = \explode(PATH_SEPARATOR, \get_include_path());
