@@ -1,5 +1,5 @@
 <?php 
-#####################################################################################################################
+########################################################################################################################
 #region
     /* 
                                                EPX-PAX-START
@@ -10,10 +10,10 @@
     
     */
 #endregion
-# ###################################################################################################################
+# ######################################################################################################################
 # i'd like to be a tree - pilu (._.) // please keep this line in all versions - BP
 namespace { return \is_callable($c = (function(){
-    # ###################################################################################################################
+    # ##################################################################################################################
     #region DX
     \defined('_\MSTART') OR \define('_\MSTART', \microtime(true));
     \set_error_handler(function($severity, $message, $file, $line){
@@ -61,7 +61,7 @@ namespace { return \is_callable($c = (function(){
                             * { scrollbar-width: thin; scrollbar-color: #555 #1e1e1e;}
                         </style>
                         <pre>{$ex}</pre>
-                        HTML;
+                    HTML;
                 }
                 exit(1);
             } break;
@@ -79,7 +79,7 @@ namespace { return \is_callable($c = (function(){
         }        
     });
     #endregion
-    # ###################################################################################################################
+    # ##################################################################################################################
     #region DIRECT CALL - LEGACY SUPPORT
     $_SERVER['_']['SITE_DIR'] = \strtr($_SERVER['FW__SITE_DIR'] ?? (empty($_SERVER['HTTP_HOST'])
         ? realpath($_SERVER['FW__SITE_DIR'] ?? \getcwd())
@@ -89,14 +89,14 @@ namespace { return \is_callable($c = (function(){
         return include $f;
     }
     #endregion
-    # ###################################################################################################################
+    # ##################################################################################################################
     #region ENSURING CLI BEARINGS
     if(!empty($_SERVER['HTTP_HOST']) && !\is_file($f = "{$_SERVER['DOCUMENT_ROOT']}/--epx/.local-http-root.php")){
-        $root_dir = \strtr($_SERVER['DOCUMENT_ROOT'], '\\','/');
+        $_SERVER['_']['ROOT_DIR'] = \strtr($_SERVER['DOCUMENT_ROOT'], '\\','/');
         \file_put_contents($f, <<<PHP
             <?php
-            1 AND empty(\$_SERVER[\$n='DOCUMENT_ROOT']) AND \$_SERVER[\$n] = "{$root_dir}";
-            1 AND empty(\$_SERVER[\$n='FW__ROOT_DIR']) AND \$_SERVER[\$n]  = "{$root_dir}";
+            1 AND empty(\$_SERVER[\$n='DOCUMENT_ROOT']) AND \$_SERVER[\$n] = "{$_SERVER['_']['ROOT_DIR']}";
+            1 AND empty(\$_SERVER[\$n='FW__ROOT_DIR']) AND \$_SERVER[\$n]  = "{$_SERVER['_']['ROOT_DIR']}";
             1 AND empty(\$_SERVER[\$n='FW__ROOT_DOM']) AND \$_SERVER[\$n]  = "{$_SERVER['HTTP_HOST']}";
             1 AND !isset(\$_ENV['DB_HOSTNAME']) AND \$_ENV['DB_HOSTNAME'] = 'localhost';
             1 AND !isset(\$_ENV['DB_DATABASE']) AND \$_ENV['DB_DATABASE'] = 'default_db';
@@ -106,12 +106,13 @@ namespace { return \is_callable($c = (function(){
         PHP);
     } 
     #endregion
-    # ###################################################################################################################
+    # ##################################################################################################################
     #region NEKRIT MULTI PLEX
     global $_;
     (isset($_) && \is_array($_)) OR $_ = [];
-    function o(){ static $I; return $I ?? ($I = \epx::_()); }
-    $_['ALT'][\epx::class] = fn($n) => \class_alias(\epx\std\origin::class, $n);
+    // function o(){ static $I; return $I ?? ($I = \epx::_()); }
+    // $_['ALT'][\epx::class] = fn($n) => \class_alias(\epx\std\origin::class, $n);
+    $_SERVER['_']['KEY'] = \md5($_SERVER['SCRIPT_FILENAME']);
     $_SERVER['_']['IS_CLI'] = empty($_SERVER['HTTP_HOST']);
     $_SERVER['_']['OB_OUT'] = \ob_get_level();
     $_SERVER['_']['IS_CLI'] OR \ob_start();
@@ -127,13 +128,13 @@ namespace { return \is_callable($c = (function(){
             : $_SERVER['HTTP_X_REQUEST_INTERFACE'] ?? 'web'
         )
     ;
-    $_SERVER['_']['MPLEX_DIR'] = \strtr(__DIR__,'\\','/');
     $_SERVER['_']['IS_PLEX_MANAGE'] = \basename($_SERVER['_']['SITE_DIR']) == '--epx';
+    $_SERVER['_']['MPLEX_DIR'] = \strtr(__DIR__,'\\','/');
     $_SERVER['_']['SPLEX_DIR'] = ($_SERVER['_']['IS_PLEX_MANAGE']
         ? $_SERVER['_']['SITE_DIR']
         : "{$_SERVER['_']['SITE_DIR']}/--epx"
     );
-    $_SERVER['_']['PVND_DIR'] = "{$_SERVER['_']['MPLEX_DIR']}/.local/vnd";
+    $_SERVER['_']['MVND_DIR'] = "{$_SERVER['_']['MPLEX_DIR']}/.local/vnd";
     \is_file($f = "{$_SERVER['DOCUMENT_ROOT']}/--epx/.local-http-root.php") AND include $f;
     $_SERVER['_']['ROOT_DIR'] = \strtr(\realpath($_SERVER['DOCUMENT_ROOT']), '\\','/', );
     $_SERVER['_']['ROOT_URL'] = (function(){
@@ -141,12 +142,41 @@ namespace { return \is_callable($c = (function(){
             ?? ((\strtolower(($_SERVER['HTTPS'] ?? 'off') ?: 'off') === 'off') ? 'http' : 'https'))
         ).'://'.($_SERVER["HTTP_HOST"] ?? null ?: $_SERVER["FW__ROOT_DOM"]);
     })();
-      
-    
+    $_SERVER['_']['SITE_URP'] = (function(){
+        if($_SERVER['_']['IS_CLI']){
+            if($_SERVER['_']['ROOT_URL']){
+                if(\str_starts_with($_SERVER['_']['SITE_DIR'], $_SERVER['_']['ROOT_DIR'])){
+                    return \substr($_SERVER['_']['SITE_DIR'], \strlen($_SERVER['_']['ROOT_DIR']));
+                } else {
+                    return false;
+                }
+            }
+        } else if((\php_sapi_name() == 'cli-server')){
+            return '';
+        } else {
+            $p = \strtok($_SERVER['REQUEST_URI'],'?');
+            if((\str_starts_with($p, $n = $_SERVER['SCRIPT_NAME']))){
+                return \substr($p, 0, \strlen($_SERVER['SCRIPT_NAME']));
+            } else if((($d = \dirname($n = $_SERVER['SCRIPT_NAME'])) == DIRECTORY_SEPARATOR)){
+                return '';
+            } else {
+                return \substr($p, 0, \strlen($d));
+            }
+        }
+    })();
+    $_SERVER['_']['SITE_URL'] = ($_SERVER['_']['ROOT_URL']  
+        ? \rtrim($_SERVER['_']['ROOT_URL'].$_SERVER['_']['SITE_URP'],'/') 
+        : ""
+    );
+    $_SERVER['_']['BASE_URL'] = $_SERVER['_']['SITE_URL'];
+    $_SERVER['_']['FRAME_URL'] = $_SERVER['_']['SITE_URL'];
+    $_SERVER['_']['PORTAL_URL'] = $_SERVER['_']['SITE_URL'];
+    $_SERVER['_']['CTLR_URL'] = $_SERVER['_']['SITE_URL'];
+    $_SERVER['_']['LOCAL_DIR'] = "{$_SERVER['_']['SPLEX_DIR']}/.local";
     
     \spl_autoload_extensions("-#{$intfc}.php,/-#{$intfc}.php,-#.php,/-#.php");
     \spl_autoload_register();
-    \set_include_path($_SERVER['_']['PVND_DIR'].PATH_SEPARATOR.get_include_path());
+    \set_include_path($_SERVER['_']['MVND_DIR'].PATH_SEPARATOR.get_include_path());
     \spl_autoload_register(function($n){
         global $_;
         if(\is_callable($alt = $_['ALT'][$n] ?? null)){
@@ -156,7 +186,7 @@ namespace { return \is_callable($c = (function(){
             $p = \strtr($n,'\\','/'),
             $m
         )){
-            if(!\is_file($f_path = "{$_SERVER['_']['PVND_DIR']}/{$p}/-#.php")){
+            if(!\is_file($f_path = "{$_SERVER['_']['MVND_DIR']}/{$p}/-#.php")){
                 $w_owner = (\strtr($m['w_owner'] ?? '','_','-') ?: ($_['ghalt_owner'] ?? 'klude-org'));
                 $w_repo = "epx-".(\strtr($m['w_repo'] ?? '','_','-') ?: ($_['ghalt_repo'] ?? 'pax-alpha'));
                 $w_ref = $_['ghalt_ref'] ?? 'main';
@@ -204,10 +234,15 @@ namespace { return \is_callable($c = (function(){
         \is_file($f = "{$_SERVER['_']['SPLEX_DIR']}/.config-{$intfc}.php") AND include $f;
         $_SERVER['_']['ENV_SOURCE'] = 2;
     }
+    
+    $_SERVER['_']['APP_NAME'] = $_ENV['APP_NAME'] ?? null ?: 'app';
+    $_SERVER['_']['DATA_NAME'] = $_ENV['DATA_NAME'] ?? null ?: '0';
+    $_SERVER['_']['DATA_DIR'] = "{$_SERVER['_']['LOCAL_DIR']}/{$_SERVER['_']['DATA_NAME']}";
+    
     \set_include_path($_SERVER['_']['TSP_PATH'] ?? ($_SERVER['_']['TSP_PATH'] = \implode(
         PATH_SEPARATOR, 
         \array_keys(\array_filter($_SERVER['_']['TSP_LIST'] ?? $_SERVER['_']['TSP_LIST'] = (\iterator_to_array((function(){
-            foreach(['app' => true, ...($GLOBALS['_']['MODULES'] ?? [])] as $path => $v){
+            foreach([$_SERVER['_']['APP_NAME'] => true, ...($GLOBALS['_']['MODULES'] ?? [])] as $path => $v){
                 if(($path[0]??'')=='/' || ($path[1]??'')==':'){
                     if(\is_dir($path)){
                         yield \strtr($path, '\\','/') => $v;
@@ -218,7 +253,7 @@ namespace { return \is_callable($c = (function(){
                     yield \strtr($d, '\\','/') => $v;
                 }
             }
-            yield $_SERVER['_']['PVND_DIR'] => true;
+            yield $_SERVER['_']['MVND_DIR'] => true;
             foreach(\explode(PATH_SEPARATOR, $_SERVER['_']['PHP_TSP_DEFAULTS']['path']) as $dir){
                 if(\is_dir($dir)){
                     yield \str_replace('\\','/', $dir) => 1;

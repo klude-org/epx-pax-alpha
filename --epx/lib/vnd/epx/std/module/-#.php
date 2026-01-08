@@ -3,7 +3,9 @@
 abstract class module extends \stdClass {
     
     public readonly string $DIR;
+    public readonly string $REM;
     protected static $I = [];
+    private static $depstack = [];
     private $running_dependencies = false;
     
     public static function _(string $p){ 
@@ -11,8 +13,14 @@ abstract class module extends \stdClass {
     }
     
     private static function i__build($p){
-        [$r_module, $r_domain, $r_source] = [\strtok($p,':'), \strtok('/') ?: null, \strtok('')];
-        $r_domain ??= 'lib';
+        $r_module = \strtok($p,':');
+        if($r_x = (\strtok('') ?: static::$depstack[0] ?? '')){
+            $r_domain = \strtok($r_x, '/');
+            $r_source = \strtok('');
+        } else {
+            $r_domain =  'lib';
+            $r_source = null;
+        }
         if(\class_exists($c = "epx\\std\\{$r_domain}\\module")){
             return new $c($p, $r_module, $r_source);
         } else {
@@ -20,8 +28,9 @@ abstract class module extends \stdClass {
         }
     }
     
-    protected function __construct($dir){
+    protected function __construct($dir, $remote){
         $this->DIR = $dir;
+        $this->REM = $remote ?? '';
     }
     
     public function __toString(){
@@ -37,11 +46,13 @@ abstract class module extends \stdClass {
            return $this; 
         }
         try {
+            \array_push(static::$depstack,$this->REM);
             $this->running_dependencies = true;
             if(\is_file($f = "{$this->DIR}/.module.php")){
                 include $f;
             }
         } finally {
+            \array_pop(static::$depstack);
             $this->running_dependencies = false;
         }
     }

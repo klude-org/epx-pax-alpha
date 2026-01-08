@@ -14,13 +14,14 @@ final class module extends \epx\std\module {
         $r_repo = $r_repo ?: 'epx-pax-alpha';
         $r_ref = $r_ref ?: 'main';
         $r_name = \strtr("{$r_module}~(github~{$r_owner}/{$r_repo}/{$r_ref})",'/','~');
+        $r_suffix = "github/{$r_owner}/{$r_repo}/{$r_ref}";
         $r_dir = "{$_SERVER['_']['MPLEX_DIR']}/.local/{$r_name}";
         $this->GH_OWNER = $r_owner;
         $this->GH_REPO = $r_repo;
         $this->GH_REF = $r_ref;
         $this->MODULE = $r_module;
         $this->NAME = $r_name;
-        parent::__construct($r_dir);
+        parent::__construct($r_dir, $r_suffix);
     }
     
     function gh__api_url($subpath, $query = []){
