@@ -1,8 +1,8 @@
 <?php namespace _\i;
 
-final class response {
+final class _response extends \_\i\feature\solo {
     
-    use \_\i\singleton__t;
+    protected function i__construct(){ }
     
     public static function respond__asset($file){
         if(!\is_file($file)){

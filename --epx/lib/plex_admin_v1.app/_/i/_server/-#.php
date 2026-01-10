@@ -1,0 +1,93 @@
+<?php namespace _\i;
+
+final class _server extends \_\i\feature\solo implements \ArrayAccess, \JsonSerializable {
+    
+    public readonly array $_;
+    
+    protected function i__construct(){ 
+        $nav = i()->nav;
+        $_SERVER['_']['ROOT_DIR'] = \strtr(\realpath($_SERVER['DOCUMENT_ROOT']), '\\','/', );
+        $_SERVER['_']['ROOT_URL'] = (function(){
+            return (($_SERVER["REQUEST_SCHEME"] 
+                ?? ((\strtolower(($_SERVER['HTTPS'] ?? 'off') ?: 'off') === 'off') ? 'http' : 'https'))
+            ).'://'.($_SERVER["HTTP_HOST"] ?? null ?: $_SERVER["FW__ROOT_DOM"]);
+        })();
+        $_SERVER['_']['SITE_URP'] = (function(){
+            if($_SERVER['_']['IS_CLI']){
+                if($_SERVER['_']['ROOT_URL']){
+                    if(\str_starts_with($_SERVER['_']['SITE_DIR'], $_SERVER['_']['ROOT_DIR'])){
+                        return \substr($_SERVER['_']['SITE_DIR'], \strlen($_SERVER['_']['ROOT_DIR']));
+                    } else {
+                        return false;
+                    }
+                }
+            } else if((\php_sapi_name() == 'cli-server')){
+                return '';
+            } else {
+                $p = \strtok($_SERVER['REQUEST_URI'],'?');
+                if((\str_starts_with($p, $n = $_SERVER['SCRIPT_NAME']))){
+                    return \substr($p, 0, \strlen($_SERVER['SCRIPT_NAME']));
+                } else if((($d = \dirname($n = $_SERVER['SCRIPT_NAME'])) == DIRECTORY_SEPARATOR)){
+                    return '';
+                } else {
+                    return \substr($p, 0, \strlen($d));
+                }
+            }
+        })();
+        $_SERVER['_']['SITE_URL'] = ($_SERVER['_']['ROOT_URL']  
+            ? \rtrim($_SERVER['_']['ROOT_URL'].$_SERVER['_']['SITE_URP'],'/') 
+            : ""
+        );
+        $_SERVER['_']['BASE_URL'] = $_SERVER['_']['SITE_URL'];
+        $_SERVER['_']['FRAME_URL'] = $_SERVER['_']['SITE_URL'];
+        $_SERVER['_']['PORTAL_URL'] = $_SERVER['_']['SITE_URL'];
+        $_SERVER['_']['CTLR_URL'] = $_SERVER['_']['SITE_URL'];
+        $_SERVER['_']['BASE_URL'] = $base_url = $_SERVER['_']['SITE_URL'].($nav->RSSN ? $nav::SPFX.$nav->RSSN : '');
+        $_SERVER['_']['FRAME_URL'] = $frame_url = $_SERVER['_']['SITE_URL'].$nav::SPFX.$nav->SESSION_ID;
+        $_SERVER['_']['PANEL_URL'] = $panel_url = rtrim($base_url."/"
+            .(
+                ($nav->PORTAL ?? null ?: '')
+                .'.'.($nav->ROLE ?? null ?: '')
+            )
+            , 
+            '/.'
+        );
+        $_SERVER['_']['CTLR_URL'] = \rtrim($panel_url."/{$nav->NPATH}",'/');
+        
+        if($_ENV['SG_TOTING__EN'] ?? true){
+            //finally tote the super global
+            $this->_ = $_SERVER;
+            $_SERVER = $this;
+        } else {
+            $this->_ =& $_SERVER;
+        }
+    }
+
+    public function offsetSet($n, $v):void { 
+        throw new \Exception('Set-Accessor is not supported for class '.static::class);
+    }
+    public function offsetExists($n):bool { 
+        return isset($this->_[$n]);
+    }
+    public function offsetUnset($n):void { 
+        throw new \Exception('Unset-Accessor is not supported for class '.static::class);
+    }
+    public function offsetGet($n):mixed { 
+        return $this->_[$n] ?? null;
+    }
+    public function jsonSerialize():mixed {
+        return (array) $this;
+    }
+    
+    public function __get($n){
+        if(\ctype_lower($n[0])) {
+            if(\class_exists($c = static::class.'\\'.$n)){
+                return $this->$n = $c::_();
+            }
+            return $this->$n = null;
+        } else {
+            return $this->$n = $this->_['_'][$n] ?? null;
+        } 
+    }
+    
+}

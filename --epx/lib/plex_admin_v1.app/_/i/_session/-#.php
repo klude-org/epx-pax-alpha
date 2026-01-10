@@ -1,31 +1,15 @@
 <?php namespace _\i;
 
-final class session implements \ArrayAccess, \JsonSerializable {
+final class _session extends \_\i\feature\solo {
 
-    use \_\i\singleton__t;
-    
     private $_;
     
-    public readonly string $SESSION_ID;
-    
-    public function __construct(){
-        $rssn = i()->nav->RSSN;
+    protected function i__construct(){
         if(\session_status() == PHP_SESSION_NONE) {
-            \session_name($_SERVER['_']['KEY']); 
-            if($rssn){
-                \session_id($rssn);
-            }
+            \session_name(\_\KEY); 
             \session_start();
         }
-        $this->SESSION_ID = \session_id();
         \define('_\SESSION_ID', \session_id());
-        if($rssn && empty($_SESSION['--CSRF'])){
-            while(\ob_get_level() > \_\OB_OUT){ @\ob_end_clean(); }
-            \http_response_code(403);
-            echo '403: Unauthorized';
-            exit(403);
-        }
-        
         isset($_SESSION['--CSRF']) OR ($b = $_SESSION['--CSRF'] = \md5(uniqid('csrf-')));
         \define('_\CSRF', ($c = $_SESSION['--CSRF']));
         if(
@@ -62,6 +46,8 @@ final class session implements \ArrayAccess, \JsonSerializable {
     }
     
     public function authenticate(){
-        
+        $intfc = \_\INTFC;
+        ($auth_f = \stream_resolve_include_path(".auth-{$intfc}.php")) AND include $auth_f;
     }
+    
 }

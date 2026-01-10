@@ -1,12 +1,10 @@
 <?php namespace _\i;
 
-final class request extends \stdClass implements \ArrayAccess, \JsonSerializable {
-    
-    use \_\i\singleton__t;
+final class _request extends \_\i\feature\solo implements \ArrayAccess, \JsonSerializable {
     
     public readonly array $_;
     
-    public function __construct(){
+    protected function i__construct(){
         
         $this->IS_CLI = $_SERVER['_']['IS_CLI'];            
         if(!$this->IS_CLI){
@@ -165,8 +163,15 @@ final class request extends \stdClass implements \ArrayAccess, \JsonSerializable
                 );
             }
         )();
-        $_REQUEST = $this;
-        return $this->_;        
+        
+        if($_ENV['SG_TOTING__EN'] ?? true){
+            //finally tote the super global
+            $_REQUEST = $this;
+        } else {
+            $_REQUEST = $this->_;
+            $this->_ =& $_REQUEST;
+        }
+        
     }
     
     public function offsetSet($n, $v):void { 
@@ -183,15 +188,6 @@ final class request extends \stdClass implements \ArrayAccess, \JsonSerializable
     }
     public function jsonSerialize():mixed {
         return (array) $this;
-    }
-    
-    public function __get($n){
-        if(\ctype_lower($n[0])) {
-            if(\class_exists($c = static::class.'\\'.$n)){
-                return $this->$n = $c::_();
-            }
-            return $this->$n = null;
-        } 
     }
 
     

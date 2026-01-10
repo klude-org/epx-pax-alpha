@@ -1,12 +1,10 @@
-<?php namespace _\i\request;
+<?php namespace _\i\_request;
 
-final class headers extends \stdClass implements \ArrayAccess, \JsonSerializable {
-    
-    use \_\i\singleton__t;
+final class _headers extends \_\i\feature\solo implements \ArrayAccess, \JsonSerializable {
     
     private readonly array $_;
     
-    public function __construct(){
+    protected function i__construct(){
         $_ = \iterator_to_array((function(){
             foreach(\getallheaders() as $k => $v){
                 yield $k => $v;

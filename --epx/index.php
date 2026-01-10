@@ -199,14 +199,13 @@ namespace { return \is_callable($c = (function(){
         $_SERVER['_']['ENV_SOURCE'] = 2;
     }
     
-    $_SERVER['_']['APP_NAME'] = $_ENV['APP_NAME'] ?? null ?: 'app';
     $_SERVER['_']['DATA_NAME'] = $_ENV['DATA_NAME'] ?? null ?: '0';
     $_SERVER['_']['DATA_DIR'] = "{$_SERVER['_']['LOCAL_DIR']}/{$_SERVER['_']['DATA_NAME']}";
     
     \set_include_path($_SERVER['_']['TSP_PATH'] ?? ($_SERVER['_']['TSP_PATH'] = \implode(
         PATH_SEPARATOR, 
         \array_keys(\array_filter($_SERVER['_']['TSP_LIST'] ?? $_SERVER['_']['TSP_LIST'] = (\iterator_to_array((function(){
-            foreach([$_SERVER['_']['APP_NAME'] => true, ...($GLOBALS['_']['MODULES'] ?? [])] as $path => $v){
+            foreach($GLOBALS['_']['MODULES'] ?? [] as $path => $v){
                 if(($path[0]??'')=='/' || ($path[1]??'')==':'){
                     if(\is_dir($path)){
                         yield \strtr($path, '\\','/') => $v;

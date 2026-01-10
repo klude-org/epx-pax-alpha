@@ -1,10 +1,8 @@
 <?php namespace _\i;
 
-class dx extends \stdClass {
+class _dx extends \_\i\feature\solo {
  
-    use \_\i\singleton__t;
-    
-    public function __construct(){
+    protected function i__construct(){
         \set_error_handler(function($severity, $message, $file, $line){
             if(($x = $_SERVER['FW__ON_ERROR'] ?? 'throw') == 'throw'){
                 throw new \ErrorException(
@@ -180,15 +178,6 @@ class dx extends \stdClass {
         
     }
     
-    public function __get($n){
-        if(\ctype_lower($n[0])) {
-            if(\class_exists($c = static::class.'\\'.$n)){
-                return $this->$n = $c::_();
-            }
-            return $this->$n = null;
-        } 
-    }
-    
     public function trap(){
         $data = $this->data();
         \defined('_\SIG_ABORT') OR \define('_\SIG_ABORT', -1);
@@ -251,7 +240,15 @@ class dx extends \stdClass {
         } else {
             return \array_map($filter, $var);
         }
-    }      
+    }
+    
+    function ini_value($directive) {
+        $val = ini_get($directive);
+        // PHP 8.2+ provides ini_parse_quantity to handle '256M' -> bytes conversion easily
+        $bytes = function_exists('ini_parse_quantity') ? ini_parse_quantity($val) : "Use PHP 8.2+ for byte conversion";
+        return sprintf("%-10s | %s\n", $directive, $val, is_numeric($bytes) ? number_format($bytes) . " bytes" : $bytes);
+    }
+    
     
     public static function data(){
         i()->env->_;
@@ -310,16 +307,26 @@ class dx extends \stdClass {
             '_post' => $_POST,
             '_files' => $_FILES,
             '_cookie' => $_COOKIE,
-            'included' => \array_map("_\i\dx::filter__path", \get_included_files()),
+            'included' => \array_map(static::class."::filter__path", \get_included_files()),
             'classes' => static::filter__types(\get_declared_classes()),
             'interfaces' => static::filter__types(\get_declared_interfaces()),
             'traits' => static::filter__types(\get_declared_interfaces()),
             'profile' => [
                 'time' => [
                     'elapsed' => number_format(((microtime(true) - \_\MSTART)),6).'s',
+                    // Time/Execution Limits
+                    'max_execution_time' => static::ini_value('max_execution_time'),
+                    'max_input_time' => static::ini_value('max_input_time'),            
+                ],
+                'data' => [
+                    // Data Transfer Limits
+                    'post_max_size' => static::ini_value('post_max_size'),
+                    'upload_max_filesize' => static::ini_value('upload_max_filesize'),
+                    'max_input_vars' => static::ini_value('max_input_vars'),
                 ],
                 'mem' => [
-                    'limit' => \ini_get('memory_limit'),
+                    // Global Memory Limits
+                    'limit' => static::ini_value('memory_limit'),
                     'start' => (\defined('_\DX_STATS')) ? \number_format(\_\DX_STATS['MUSAGE'] / (1024 * 1024), 2).'MB' : null,
                     'usage' => \number_format(\memory_get_usage(true) / (1024 * 1024), 2).'MB',
                     'mpeak' => \number_format(\memory_get_peak_usage(true) / (1024 * 1024), 2).'MB',

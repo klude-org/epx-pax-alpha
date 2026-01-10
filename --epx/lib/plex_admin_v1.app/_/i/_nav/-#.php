@@ -1,10 +1,10 @@
-<?php namespace _\i;
+<?php namespace _\i; 
 
-class nav extends \stdClass {
-    
-    use \_\i\singleton__t;
-    
+final class _nav extends \_\i\feature\solo {
+
     const SPFX = '/$~';
+    
+    protected function i__construct(){ }
     
     public function route_abort($code, $message){
         if($this->IS_CLI){
@@ -18,37 +18,7 @@ class nav extends \stdClass {
             };
         }
     }
-    
-    public function route_abort_404 () {
-        \defined('_\SIG_ABORT') OR \define('_\SIG_ABORT', 0);
-        $debug = ((($_REQUEST['--trap'] ?? '') == 'not-found')
-            ? \json_encode(
-                [
-                    'error' => "404 Not Found: {$this->RURP}",
-                    'info' => $_SERVER['.'], 
-                ],
-                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-            )
-            : ''
-        );
-        if($_SERVER['_']['IS_CLI']){
-            echo "\e[31m404 Not Found: \e[91m{$this->RURP}\e[0m\n";
-            echo $debug;
-        } else {
-            \http_response_code(404);
-            while(\ob_get_level() > \_\OB_OUT){ @\ob_end_clean(); }
-            if($f = \stream_resolve_include_path('_/views/html_error_404-v.php')){
-                include $f;
-            } else if($debug){
-                \header('Content-Type: application/json');
-                echo $debug;
-            } else {
-                echo "404 Not Found: {$this->RURP}";
-            }
-        }
-        exit(404);
-    }    
-    
+        
     public function route(){
         $this->IS_CLI = $_SERVER['_']['IS_CLI'];
         $this->INTFC = $_SERVER['_']['INTFC'];
@@ -92,16 +62,7 @@ class nav extends \stdClass {
         if(!\preg_match(
             "#^/"
                 ."(?:"
-                    ."(?:"
-                        ."(?<FACET>"
-                            ."(?<PORTAL>(?:__|--)[^/\.]*)"
-                            ."(?:\.(?<ROLE>[^/]*))?"
-                        .")/?"
-                    .")?"
-                    ."(?<NPATH>"
-                        ."((?<ENTITY>[a-zA-Z_0-9]*)(?:/(?<ISEG>@(?<ID>[^~/]*))?)?(?<SPATH>[^~]*))?"
-                    .")"
-                    ."(?:\~(?<CONTROL>[a-zA-Z_][\w]*))?"
+                    ."(?<NPATH>.*)"
                 .")?"
             . "$#",
             $this->RURP,
@@ -114,121 +75,40 @@ class nav extends \stdClass {
             }
         }
         $this->NPATH = \trim($this->NPATH, '/');
-        $this->SPATH = \trim($this->SPATH, '/');
-        $this->PANEL = \trim(\str_replace('-','_', $this->PORTAL ?? null ?: '__'),'/');
-        $this->ENTITY = \trim($this->ENTITY, '/');
-        $this->ELIST = \iterator_to_array((function(){
-            if($this->ENTITY){
-                if(\class_exists($class = \str_replace('/','\\', $epath = "_/{$this->ENTITY}"))){
-                    yield "{$epath}/{$this->PANEL}";
-                    foreach(\class_parents($class) as $v){
-                        yield  \str_replace('\\','/', "{$v}/{$this->PANEL}");
-                    }
-                }
-                yield "{$this->PANEL}/{$this->ENTITY}";
-            } else {
-                yield $this->PANEL;
-            }
-        })());        
-        $this->CPATH = ($this->ISEG 
-            ? \implode('/',\array_map(fn($k) => \trim($k,'/'), \array_filter([
-                '@',
-                $this->SPATH, 
-                ($_GET['--asset'] ?? null),
-            ])))
-            : \implode('/',\array_map(fn($k) => \trim($k,'/'), \array_filter([
-                $this->SPATH,
-                ($_GET['--asset'] ?? null)
-            ])))
-        );
-        $this->DPATH = \implode('/',\array_map(fn($k) => \trim($k,'/'), \array_filter([
-            $this->NPATH,
-            ($_GET['--asset'] ?? null)
-        ])));
-        $this->IS_ASSET = (\preg_match('#(-pub|-asset-app|-asset-pvt|-asset)[/\.\-]#', $this->CPATH, $m)) 
-            ? match($m[1]){
-                default => null,
-                '-pub' => 'public',
-                '-asset' => 'public',
-                '-asset-pvt' => (($_SERVER['_']['IS_CLI'] || (
-                    !empty($this->ISEG)  
-                    && !empty($_SERVER['HTTP_REFERER'])
-                    && \str_contains($_SERVER['HTTP_REFERER'], "{$this->ENTITY}/{$this->ISEG}")
-                )) ? 'private' : 'private-not-allowed'),
-                '-asset-app' => 'app',
-            }
-            : false
-        ;
-        $this->FPATH = \implode('/',\array_map(fn($k) => \trim($k,'/'), \array_filter([
-            $this->PANEL,
-            $this->NPATH,
-            $this->ASSET,
-        ])));
+        $this->IS_ASSET = \preg_match('#(-pub|-asset-app|-asset-pvt|-asset)[/\.\-]#', $this->NPATH); 
         $this->CTLR_FILE = (function(){
             $resolve_extensions = $this->IS_ASSET 
                 ? null 
                 : ["-@{$this->HANDLER}.php", "-@.php", "-@.html"]
             ;        
-            $resolve_dfile__fn = function($dpath){
-                if(\is_file($f = $this->SEARCHED[] = \_\DATA_DIR."/_/com/{$dpath}")){
-                    return new \SplFileInfo($f);
-                }
-            };
-            $resolve_cfile__fn = function($elist, $cpath, $sfx = null){
+            $resolve_cfile__fn = function($cpath, $sfx = null){
                 try{
                     $r = [];
                     $suffixes = \is_array($sfx) ? $sfx : [$sfx];
-                    foreach($elist as $j){
-                        $path = \str_replace('\\', '/', \trim("{$j}/{$cpath}",'/'));
-                        foreach($suffixes as $suffix){
-                            if($f = (($suffix)
-                                ? \stream_resolve_include_path($r[] = "{$path}/{$suffix}") 
-                                    ?: (\stream_resolve_include_path($r[] = "{$path}{$suffix}")
-                                )
-                                : \stream_resolve_include_path($r[] = "{$path}")
-                            )){
-                                return new \SplFileInfo($f);
-                            }
+                    $path = \strtr($cpath,'\\', '/',);
+                    foreach($suffixes as $suffix){
+                        if($f = (($suffix)
+                            ? \stream_resolve_include_path($r[] = "{$path}/{$suffix}") 
+                                ?: (\stream_resolve_include_path($r[] = "{$path}{$suffix}")
+                            )
+                            : \stream_resolve_include_path($r[] = "{$path}")
+                        )){
+                            return new \SplFileInfo($f);
                         }
                     }
                 } finally {
                     $this->SEARCHED = \array_merge($this->SEARCHED ?? [], $r);
                 }
             };
-            switch($this->IS_ASSET ?: ''){
-                case 'private-not-allowed':{
-                    return '';
-                } break;
-                case 'private':
-                case 'app':{
-                    if($_SERVER['_']['IS_CLI'] || ($_SESSION['--AUTH']['en'] ?? false)){
-                        return ($resolve_dfile__fn)($this->DPATH) 
-                        ?: ($resolve_cfile__fn)(
-                            $this->ELIST,
-                            $this->CPATH,
-                        );
-                    } else {
-                        return '';
-                    }
-                } break;
-                case 'public':{
-                    return ($resolve_dfile__fn)($this->DPATH) 
-                    ?: ($resolve_cfile__fn)(
-                        $this->ELIST,
-                        $this->CPATH,
-                    );
-                } break; 
-                case '':{
-                    return ($resolve_cfile__fn)(
-                        $this->ELIST,
-                        $this->CPATH,
-                        $resolve_extensions,
-                    );
-                } break;
-                default: {
-                    throw new \Exception('Unanticipated Error');
-                }
-            }            
+            return ($this->IS_ASSET ?: '')
+                ? ($resolve_cfile__fn)(
+                    \trim("__/".$this->NPATH,'/'),
+                )
+                : ($resolve_cfile__fn)(
+                    \trim("__/".$this->NPATH,'/'),
+                    $resolve_extensions,
+                )
+            ;
         })();
         
         if(!($file = $this->CTLR_FILE)){
@@ -298,7 +178,7 @@ class nav extends \stdClass {
         
         try {
             $INIT__EN = true;
-            $__CONTEXT__ = ($this->{$this->ENTITY}->panel) ?? $this;
+            $__CONTEXT__ = i();
             $__NAV__ = $this;
             $abort__fn = fn(...$args) => $this->route_abort(...$args);
             return (function() use($abort__fn, $__NAV__){
@@ -346,6 +226,5 @@ class nav extends \stdClass {
                 ($f = \stream_resolve_include_path('.dx.php')) AND include $f;
             }
         }
-    }     
-    
+    }      
 }

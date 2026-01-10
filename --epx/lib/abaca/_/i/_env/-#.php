@@ -1,22 +1,16 @@
 <?php namespace _\i;
 
-class env extends \stdClass implements \ArrayAccess, \JsonSerializable {
+class _env extends \_\i\feature\solo implements \ArrayAccess, \JsonSerializable {
     
-    use \_\i\singleton__t;
+    public array $_;
     
-    public readonly array $_;
-    
-    public function __construct(){
-        $this->_ = $_ENV;
-        $_ENV = $this;
-    }
-    
-    public function __get($n){
-        //static $N =[];  return $N[$k = \strtolower($n)] ?? ($N[$k] = (static::class.'\\'.$k)::_());
-        return $this->$n = \class_exists($c = static::class.'\\'.$n)
-            ? $c::_()
-            : null
-        ;
+    protected function i__construct(){
+        if($_ENV['SG_TOTING__EN'] ?? true){
+            $this->_ = $_ENV;
+            $_ENV = $this;
+        } else {
+            $this->_ =& $_REQUEST;
+        }
     }
     
     public function offsetSet($n, $v):void { 

@@ -7,7 +7,7 @@ final class _ extends \stdClass {
     private function __construct(){ 
         $this->fn = (object)[];
         function o(){ static $I; return $I ?? $I = \_::_();  }
-        function i(){ static $I; return $I ?? $I = \_\i::_();  }        
+        function i(){ static $I; return $I ?? $I = \_\i::_();  }
         \spl_autoload_register($fn = function($n){
             static $x = [];
             if(empty($x[$n])){
@@ -39,7 +39,7 @@ final class _ extends \stdClass {
     public function __get($n){
         //static $N =[];  return $N[$k = \strtolower($n)] ?? ($N[$k] = (static::class.'\\'.$k)::_());
         return $this->$n = \class_exists($c = static::class.'\\'.$n)
-            ? $c::_()
+            ? $c::_($this)
             : null
         ;
     }

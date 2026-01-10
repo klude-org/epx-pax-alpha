@@ -1,12 +1,10 @@
 <?php namespace _\i;
 
-final class server extends \stdClass implements \ArrayAccess, \JsonSerializable {
+final class _server extends \_\i\feature\solo implements \ArrayAccess, \JsonSerializable {
     
-    use \_\i\singleton__t;
-
     public readonly array $_;
     
-    protected function __construct(){ 
+    protected function i__construct(){ 
         $nav = i()->nav;
         $_SERVER['_']['ROOT_DIR'] = \strtr(\realpath($_SERVER['DOCUMENT_ROOT']), '\\','/', );
         $_SERVER['_']['ROOT_URL'] = (function(){
@@ -55,8 +53,14 @@ final class server extends \stdClass implements \ArrayAccess, \JsonSerializable 
             '/.'
         );
         $_SERVER['_']['CTLR_URL'] = \rtrim($panel_url."/{$nav->NPATH}",'/');
-        $this->_ = $_SERVER;
-        $_SERVER = $this;
+        
+        if($_ENV['SG_TOTING__EN'] ?? true){
+            //finally tote the super global
+            $this->_ = $_SERVER;
+            $_SERVER = $this;
+        } else {
+            $this->_ =& $_SERVER;
+        }
     }
 
     public function offsetSet($n, $v):void { 
